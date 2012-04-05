@@ -184,7 +184,12 @@ public class DtsModule implements IOFMessageListener {
 					
 					if(dataPath >= 0){
 						try {
-							floodlightProvider.getSwitches().get(dataPath).write(flowMod, null);
+							IOFSwitch iofSw = floodlightProvider.getSwitches().get(dataPath);
+							flowMod.setBufferId(iofSw.getNextTransactionId());
+							iofSw.write(flowMod, null);
+							
+							//To static flow pusher
+							flowMod.setBufferId(iofSw.getNextTransactionId());
 						} catch (IOException e) {
 							logger.error("It wasn't possible to configure the switch "+sw.getTitle());
 						}
