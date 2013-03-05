@@ -18,6 +18,7 @@
 package net.floodlightcontroller.packet;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 /**
  *
@@ -114,6 +115,13 @@ public class TCP extends BasePacket {
         this.checksum = checksum;
         return this;
     }
+    
+    @Override
+    public void resetChecksum() {
+        this.checksum = 0;
+        super.resetChecksum();
+    }
+    
     public short getUrgentPointer(short urgentPointer) {
         return this.urgentPointer;
     }
@@ -246,7 +254,7 @@ public class TCP extends BasePacket {
                (flags == other.flags) &&
                (windowSize == other.windowSize) &&
                (urgentPointer == other.urgentPointer) &&
-               (dataOffset == 5 || options.equals(other.options));
+               (dataOffset == 5 || Arrays.equals(options,other.options));
     }
 
     @Override
@@ -276,7 +284,8 @@ public class TCP extends BasePacket {
         }
         
         this.payload = new Data();
-        this.payload = payload.deserialize(data, bb.position(), bb.limit()-bb.position());
+        int remLength = bb.limit()-bb.position();
+        this.payload = payload.deserialize(data, bb.position(), remLength);
         this.payload.setParent(this);
         return this;
     }

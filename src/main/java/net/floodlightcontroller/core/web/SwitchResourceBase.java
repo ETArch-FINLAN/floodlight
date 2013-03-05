@@ -17,19 +17,16 @@
 
 package net.floodlightcontroller.core.web;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import net.floodlightcontroller.core.IFloodlightProvider;
+import net.floodlightcontroller.core.IFloodlightProviderService;
 import net.floodlightcontroller.core.IOFSwitch;
-import net.floodlightcontroller.core.types.MacVlanPair;
+import net.floodlightcontroller.core.annotations.LogMessageDoc;
 
+import org.openflow.protocol.OFFeaturesReply;
 import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.OFPort;
 import org.openflow.protocol.OFStatisticsRequest;
@@ -55,8 +52,7 @@ public class SwitchResourceBase extends ServerResource {
     
     public enum REQUESTTYPE {
         OFSTATS,
-        OFFEATURES,
-        SWITCHTABLE
+        OFFEATURES
     }
     
     @Override
@@ -65,8 +61,17 @@ public class SwitchResourceBase extends ServerResource {
         
     }
     
-    protected List<OFStatistics> getSwitchStatistics(long switchId, OFStatisticsType statType) {
-        IFloodlightProvider floodlightProvider = (IFloodlightProvider)getApplication();
+    @LogMessageDoc(level="ERROR",
+                   message="Failure retrieving statistics from switch {switch}",
+                   explanation="An error occurred while retrieving statistics" +
+                   		"from the switch",
+                   recommendation=LogMessageDoc.CHECK_SWITCH + " " +
+                   		LogMessageDoc.GENERIC_ACTION)
+    protected List<OFStatistics> getSwitchStatistics(long switchId, 
+                                                     OFStatisticsType statType) {
+        IFloodlightProviderService floodlightProvider = 
+                (IFloodlightProviderService)getContext().getAttributes().
+                    get(IFloodlightProviderService.class.getCanonicalName());
         
         IOFSwitch sw = floodlightProvider.getSwitches().get(switchId);
         Future<List<OFStatistics>> future;
@@ -115,43 +120,38 @@ public class SwitchResourceBase extends ServerResource {
                 future = sw.getStatistics(req);
                 values = future.get(10, TimeUnit.SECONDS);
             } catch (Exception e) {
-                log.error("Failure retrieving statistics from switch {}", sw, e);
+                log.error("Failure retrieving statistics from switch " + sw, e);
             }
         }
         return values;
     }
-    
+
     protected List<OFStatistics> getSwitchStatistics(String switchId, OFStatisticsType statType) {
         return getSwitchStatistics(HexString.toLong(switchId), statType);
     }
-
-    /**
-     * Returns a JSON list of the switch's MAC table.
-     * This API will only return results if LearningSwitch is being used.
-     * @param switchId The switch's DPID
-     * @return A list of switch table entries
-     */
-    protected List<Map<String, Object>> getSwitchTableJson(long switchId) {
-        IFloodlightProvider floodlightProvider = (IFloodlightProvider)getApplication();
+    
+    protected OFFeaturesReply getSwitchFeaturesReply(long switchId) {
+        IFloodlightProviderService floodlightProvider = 
+                (IFloodlightProviderService)getContext().getAttributes().
+                get(IFloodlightProviderService.class.getCanonicalName());
 
         IOFSwitch sw = floodlightProvider.getSwitches().get(switchId);
-        List<Map<String, Object>> switchTableJson = null;
+        Future<OFFeaturesReply> future;
+        OFFeaturesReply featuresReply = null;
         if (sw != null) {
-            switchTableJson = new ArrayList<Map<String, Object>>();
-            Map<MacVlanPair, Short> swTable = sw.getMacVlanToPortMap();
-            if (swTable != null) {
-                Iterator<MacVlanPair> iterSwitchTable = swTable.keySet().iterator();
-                while (iterSwitchTable.hasNext()) {
-                    MacVlanPair key = iterSwitchTable.next();
-                    Map<String, Object> switchTableEntry = new HashMap<String, Object>();
-                    switchTableEntry.put("mac", HexString.toHexString(key.mac));
-                    switchTableEntry.put("vlan", key.vlan);
-                    switchTableEntry.put("port", swTable.get(key));
-                    switchTableJson.add(switchTableEntry);
-                }
+            try {
+                future = sw.querySwitchFeaturesReply();
+                featuresReply = future.get(10, TimeUnit.SECONDS);
+            } catch (Exception e) {
+                log.error("Failure getting features reply from switch" + sw, e);
             }
         }
-        return switchTableJson;
+
+        return featuresReply;
     }
-    
+
+    protected OFFeaturesReply getSwitchFeaturesReply(String switchId) {
+        return getSwitchFeaturesReply(HexString.toLong(switchId));
+    }
+
 }

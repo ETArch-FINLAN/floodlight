@@ -21,6 +21,7 @@ import java.util.Arrays;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.openflow.util.U16;
+import org.openflow.util.U32;
 import org.openflow.util.U8;
 
 /**
@@ -29,7 +30,7 @@ import org.openflow.util.U8;
  * @author David Erickson (daviderickson@cs.stanford.edu) - Feb 8, 2010
  */
 public class OFPacketIn extends OFMessage {
-    public static int MINIMUM_LENGTH = 18;
+    public static short MINIMUM_LENGTH = 18;
 
     public enum OFPacketInReason {
         NO_MATCH, ACTION
@@ -200,5 +201,11 @@ public class OFPacketIn extends OFMessage {
             return false;
         }
         return true;
+    }
+
+    public String toString() {
+        String myStr = super.toString();
+        return "packetIn" +
+            ":bufferId=" + U32.f(this.bufferId) + myStr;
     }
 }

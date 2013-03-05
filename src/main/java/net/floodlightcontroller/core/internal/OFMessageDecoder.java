@@ -17,6 +17,8 @@
 
 package net.floodlightcontroller.core.internal;
 
+import java.util.List;
+
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -37,16 +39,22 @@ public class OFMessageDecoder extends FrameDecoder {
     @Override
     protected Object decode(ChannelHandlerContext ctx, Channel channel,
                             ChannelBuffer buffer) throws Exception {
-        if (buffer.readableBytes() < OFMessage.MINIMUM_LENGTH) {
+        if (!channel.isConnected()) {
+            // In testing, I see decode being called AFTER decode last.
+            // This check avoids that from reading curroupted frames
             return null;
         }
-        buffer.markReaderIndex();
-        OFMessage message =
-                factory.parseMessage(buffer);
-        if (message == null) {
-            buffer.resetReaderIndex();
-        }
+
+        List<OFMessage> message = factory.parseMessage(buffer);
         return message;
+    }
+
+    @Override
+    protected Object decodeLast(ChannelHandlerContext ctx, Channel channel,
+                            ChannelBuffer buffer) throws Exception {
+        // This is not strictly needed atthis time. It is used to detect
+        // connection reset detection from netty (for debug)
+        return null;
     }
 
 }

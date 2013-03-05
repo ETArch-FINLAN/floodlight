@@ -35,7 +35,7 @@ public interface ICounter {
   public void increment();
   
   /**
-   * Used primarily for testing - no performance guarantees
+   * Used primarily for flushing thread local updates
    */
   public void increment(Date d, long delta);
   
@@ -63,7 +63,7 @@ public interface ICounter {
    * Returns a CountSeries that is a snapshot of the counter's values for the given dateSpan.  (Further changes
    * to this counter won't be reflected in the CountSeries that comes  back.)
    * 
-   * @param startDate
+   * @param dateSpan
    * @return
    */
   public CountSeries snapshot(DateSpan dateSpan);

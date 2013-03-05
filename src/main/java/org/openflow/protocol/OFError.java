@@ -1,7 +1,7 @@
 /**
 *    Copyright (c) 2008 The Board of Trustees of The Leland Stanford Junior
 *    University
-* 
+*
 *    Licensed under the Apache License, Version 2.0 (the "License"); you may
 *    not use this file except in compliance with the License. You may obtain
 *    a copy of the License at
@@ -18,6 +18,8 @@
 package org.openflow.protocol;
 
 import java.util.Arrays;
+import java.util.List;
+
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.openflow.protocol.factory.MessageParseException;
@@ -27,7 +29,7 @@ import org.openflow.util.U16;
 
 /**
  * Represents an ofp_error_msg
- * 
+ *
  * @author David Erickson (daviderickson@cs.stanford.edu)
  * @author Rob Sherwood (rob.sherwood@stanford.edu)
  */
@@ -35,7 +37,27 @@ public class OFError extends OFMessage implements OFMessageFactoryAware {
     public static int MINIMUM_LENGTH = 12;
 
     public enum OFErrorType {
-        OFPET_HELLO_FAILED, OFPET_BAD_REQUEST, OFPET_BAD_ACTION, OFPET_FLOW_MOD_FAILED, OFPET_PORT_MOD_FAILED, OFPET_QUEUE_OP_FAILED
+        // OFPET_VENDOR_ERROR is an extension that was added in Open vSwitch and isn't
+        // in the OF 1.0 spec, but it was easier to add it here instead of adding
+        // generic support for extensible vendor-defined error messages.
+        // It uses the random value 0xb0c2 to avoid conflicts with other possible new
+        // error types. Support for vendor-defined extended errors has been standardized
+        // in the OF 1.2 spec, so this workaround is only needed for 1.0.
+        OFPET_HELLO_FAILED, OFPET_BAD_REQUEST, OFPET_BAD_ACTION, OFPET_FLOW_MOD_FAILED, OFPET_PORT_MOD_FAILED, OFPET_QUEUE_OP_FAILED, OFPET_VENDOR_ERROR((short)0xb0c2);
+
+        protected short value;
+
+        private OFErrorType() {
+            this.value = (short) this.ordinal();
+        }
+
+        private OFErrorType(short value) {
+            this.value = value;
+        }
+
+        public short getValue() {
+            return value;
+        }
     }
 
     public enum OFHelloFailedCode {
@@ -64,6 +86,9 @@ public class OFError extends OFMessage implements OFMessageFactoryAware {
 
     protected short errorType;
     protected short errorCode;
+    protected int vendor;
+    protected int vendorErrorType;
+    protected short vendorErrorCode;
     protected OFMessageFactory factory;
     protected byte[] error;
     protected boolean errorIsAscii;
@@ -72,6 +97,12 @@ public class OFError extends OFMessage implements OFMessageFactoryAware {
         super();
         this.type = OFType.ERROR;
         this.length = U16.t(MINIMUM_LENGTH);
+    }
+
+    /** convenience constructor */
+    public OFError(OFErrorType errorType) {
+        this();
+        setErrorType(errorType);
     }
 
     /**
@@ -90,7 +121,14 @@ public class OFError extends OFMessage implements OFMessageFactoryAware {
     }
 
     public void setErrorType(OFErrorType type) {
-        this.errorType = (short) type.ordinal();
+        this.errorType = type.getValue();
+    }
+
+    /**
+     * @return true if the error is an extended vendor error
+     */
+    public boolean isVendorError() {
+        return errorType == OFErrorType.OFPET_VENDOR_ERROR.getValue();
     }
 
     /**
@@ -132,6 +170,22 @@ public class OFError extends OFMessage implements OFMessageFactoryAware {
         this.errorCode = (short) code.ordinal();
     }
 
+    public int getVendorErrorType() {
+        return vendorErrorType;
+    }
+
+    public void setVendorErrorType(int vendorErrorType) {
+        this.vendorErrorType = vendorErrorType;
+    }
+
+    public short getVendorErrorCode() {
+        return vendorErrorCode;
+    }
+
+    public void setVendorErrorCode(short vendorErrorCode) {
+        this.vendorErrorCode = vendorErrorCode;
+    }
+
     public OFMessage getOffendingMsg() throws MessageParseException {
         // should only have one message embedded; if more than one, just
         // grab first
@@ -140,13 +194,16 @@ public class OFError extends OFMessage implements OFMessageFactoryAware {
         ChannelBuffer errorMsg = ChannelBuffers.wrappedBuffer(this.error);
         if (factory == null)
             throw new RuntimeException("MessageFactory not set");
-        OFMessage message = this.factory.parseMessage(errorMsg);
-        return message;
+
+        List<OFMessage> msglist = this.factory.parseMessage(errorMsg);
+        if (msglist == null)
+                return null;
+        return msglist.get(0);
     }
 
     /**
      * Write this offending message into the payload of the Error message
-     * 
+     *
      * @param offendingMsg
      */
 
@@ -210,7 +267,7 @@ public class OFError extends OFMessage implements OFMessageFactoryAware {
         if (dataLength > 0) {
             this.error = new byte[dataLength];
             data.readBytes(this.error);
-            if (this.errorType == OFErrorType.OFPET_HELLO_FAILED.ordinal())
+            if (this.errorType == OFErrorType.OFPET_HELLO_FAILED.getValue())
                 this.errorIsAscii = true;
         }
     }
@@ -226,7 +283,7 @@ public class OFError extends OFMessage implements OFMessageFactoryAware {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -242,7 +299,7 @@ public class OFError extends OFMessage implements OFMessageFactoryAware {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
