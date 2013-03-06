@@ -86,7 +86,7 @@
 	</build>
 
 	<scm>
-		<connection>scm:svn:http://svn.facom.com.br/trunk</connection>
+		<connection>scm:svn:http://svn.facom.ufu.br/repos/mehar/source-code/floodlight/trunk</connection>
 	</scm>
 
 	<distributionManagement>
