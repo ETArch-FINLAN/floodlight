@@ -48,6 +48,10 @@ public class GenericTranslator implements IOFMessageListener, IFloodlightModule 
 		}
 	}
 	
+	public IFloodlightProviderService getFloodlightProvider() {
+		return floodlightProvider;
+	}
+	
 	@Override
 	public String getName() {
 		return "jslee-ra";
@@ -92,7 +96,7 @@ public class GenericTranslator implements IOFMessageListener, IFloodlightModule 
 		// so, there is very little to do here, either...
 		floodlightProvider = context.getServiceImpl(IFloodlightProviderService.class);
 	}
-
+	
 	@Override
 	public void startUp(FloodlightModuleContext context) {
 		// Register what to listen...
