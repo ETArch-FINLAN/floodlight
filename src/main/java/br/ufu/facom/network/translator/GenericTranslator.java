@@ -1,5 +1,6 @@
 package br.ufu.facom.network.translator;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
@@ -146,5 +147,9 @@ public class GenericTranslator implements IOFMessageListener, IFloodlightModule 
 		listener.sendEvent(sw, msg, cntx);
 		return Command.CONTINUE;
 	}
+	
+	public void writeMessage(IOFSwitch sw, OFMessage msg) throws IOException{
+		floodlightProvider.getSwitches().get(sw.getId()).write(msg,null);
+	} 
 
 }
