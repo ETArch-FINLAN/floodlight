@@ -60,7 +60,7 @@ public class HubTest extends FloodlightTestCase {
     private Hub hub;
     
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         super.setUp();
 
         mockFloodlightProvider = getMockFloodlightProvider();
@@ -126,7 +126,7 @@ public class HubTest extends FloodlightTestCase {
         
         assertTrue(wc1.hasCaptured());
         OFMessage m = wc1.getValue();
-        assertEquals(po, m);
+        assert(m.equals(po));
     }
 
     @Test
@@ -162,6 +162,6 @@ public class HubTest extends FloodlightTestCase {
         
         assertTrue(wc1.hasCaptured());
         OFMessage m = wc1.getValue();
-        assertEquals(po, m);
+        assert(m.equals(po));
     }
 }

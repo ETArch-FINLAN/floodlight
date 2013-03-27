@@ -127,17 +127,7 @@ public enum OFType {
                             @Override
                             public OFMessage instantiate() {
                                 return new OFBarrierReply();
-                            }}),
-    QUEUE_GET_CONFIG_REQUEST    (20, OFQueueGetConfigRequest.class, new Instantiable<OFMessage>() {
-                                    @Override
-                                    public OFMessage instantiate() {
-                                        return new OFQueueGetConfigRequest();
-                                    }}),
-    QUEUE_GET_CONFIG_REPLY      (21, OFQueueGetConfigReply.class, new Instantiable<OFMessage>() {
-                                    @Override
-                                    public OFMessage instantiate() {
-                                        return new OFQueueGetConfigReply();
-                                    }});
+                            }});
 
     static OFType[] mapping;
 
@@ -151,7 +141,7 @@ public enum OFType {
      * type number, length, and derived class
      *
      * @param type Wire protocol number associated with this OFType
-     * @param clazz The Java class corresponding to this type of OpenFlow
+     * @param requestClass The Java class corresponding to this type of OpenFlow
      *              message
      * @param instantiator An Instantiator<OFMessage> implementation that creates an
      *          instance of the specified OFMessage

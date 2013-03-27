@@ -97,12 +97,6 @@ public class UDP extends BasePacket {
         return this;
     }
 
-    @Override
-    public void resetChecksum() {
-        this.checksum = 0;
-        super.resetChecksum();
-    }
-
     /**
      * Serializes the packet. Will compute and set the following fields if they
      * are set to specific values at the time serialize is called:
@@ -217,7 +211,7 @@ public class UDP extends BasePacket {
             }
         } else if (UDP.decodeMap.containsKey(this.sourcePort)) {
             try {
-                this.payload = UDP.decodeMap.get(this.sourcePort).getConstructor().newInstance();
+                this.payload = UDP.decodeMap.get(this.destinationPort).getConstructor().newInstance();
             } catch (Exception e) {
                 throw new RuntimeException("Failure instantiating class", e);
             }

@@ -17,12 +17,9 @@
 
 package net.floodlightcontroller.storage.memory;
 
-import net.floodlightcontroller.core.module.FloodlightModuleContext;
-import net.floodlightcontroller.perfmon.IPktInProcessingTimeService;
+import net.floodlightcontroller.perfmon.PktinProcessingTime;
 import net.floodlightcontroller.storage.nosql.NoSqlStorageSource;
 import net.floodlightcontroller.storage.SynchronousExecutorService;
-import net.floodlightcontroller.storage.IStorageSourceService;
-import net.floodlightcontroller.core.module.IFloodlightService;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,13 +33,18 @@ import net.floodlightcontroller.storage.StorageException;
 public class MemoryStorageSource extends NoSqlStorageSource {
     
     private Map<String, MemoryTable> tableMap = new HashMap<String,MemoryTable>();
-    IPktInProcessingTimeService pktinProcessingTime;
+    
+    PktinProcessingTime pktinProcessingTime;
+    
+    public MemoryStorageSource() {
+        super(new SynchronousExecutorService(), null);
+    }
     
     synchronized private MemoryTable getTable(String tableName, boolean create) {
         MemoryTable table = tableMap.get(tableName);
         if (table == null) {
             if (!create)
-                throw new StorageException("Table " + tableName + " does not exist");
+                throw new StorageException("Table does not exist");
             table = new MemoryTable(tableName);
             tableMap.put(tableName, table);
         }
@@ -138,7 +140,7 @@ public class MemoryStorageSource extends NoSqlStorageSource {
     }
     
     @Override
-    protected void updateRowsImpl(String tableName, List<Map<String,Object>> updateRowList) {
+    protected void updateRows(String tableName, List<Map<String,Object>> updateRowList) {
         MemoryTable table = getTable(tableName, false);
         String primaryKeyName = getTablePrimaryKeyName(tableName);
         synchronized (table) {
@@ -157,7 +159,7 @@ public class MemoryStorageSource extends NoSqlStorageSource {
     }
     
     @Override
-    protected void deleteRowsImpl(String tableName, Set<Object> rowKeys) {
+    protected void deleteRows(String tableName, Set<Object> rowKeys) {
         MemoryTable table = getTable(tableName, false);
         synchronized (table) {
             for (Object rowKey : rowKeys) {
@@ -168,31 +170,11 @@ public class MemoryStorageSource extends NoSqlStorageSource {
     
     @Override
     public void createTable(String tableName, Set<String> indexedColumnNames) {
-        super.createTable(tableName, indexedColumnNames);
         getTable(tableName, true);
     }
     
     public void setPktinProcessingTime(
-            IPktInProcessingTimeService pktinProcessingTime) {
+            PktinProcessingTime pktinProcessingTime) {
         this.pktinProcessingTime = pktinProcessingTime;
-    }
-
-    // IFloodlightModule methods
-
-    @Override
-    public void startUp(FloodlightModuleContext context) {
-        super.startUp(context);
-        executorService = new SynchronousExecutorService();
-    }
-
-    @Override
-    public Map<Class<? extends IFloodlightService>,
-               IFloodlightService> getServiceImpls() {
-        Map<Class<? extends IFloodlightService>,
-            IFloodlightService> m =
-                new HashMap<Class<? extends IFloodlightService>,
-                            IFloodlightService>();
-        m.put(IStorageSourceService.class, this);
-        return m;
     }
 }

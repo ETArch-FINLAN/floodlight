@@ -27,9 +27,4 @@ public class OFActionTransportLayerDestination extends OFActionTransportLayer {
         super.setType(OFActionType.SET_TP_DST);
         super.setLength((short) OFActionTransportLayer.MINIMUM_LENGTH);
     }
-    
-    public OFActionTransportLayerDestination(short port) {
-        this();
-        this.transportPort = port;
-    }
 }

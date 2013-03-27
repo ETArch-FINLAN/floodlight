@@ -74,6 +74,7 @@ public class OFMatchBeanInfo extends SimpleBeanInfo {
         try {
             m = c.getMethod(mName, new Class[]{ type});
         } catch (SecurityException e) {
+            
             e.printStackTrace();
             throw new RuntimeException(e);
         } catch (NoSuchMethodException e) {

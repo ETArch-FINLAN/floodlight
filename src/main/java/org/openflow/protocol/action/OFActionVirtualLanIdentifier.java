@@ -33,13 +33,8 @@ public class OFActionVirtualLanIdentifier extends OFAction {
     protected short virtualLanIdentifier;
 
     public OFActionVirtualLanIdentifier() {
-        super.setType(OFActionType.SET_VLAN_ID);
+        super.setType(OFActionType.SET_VLAN_VID);
         super.setLength((short) MINIMUM_LENGTH);
-    }
-    
-    public OFActionVirtualLanIdentifier(short vlanId) {
-        this();
-        this.virtualLanIdentifier = vlanId;
     }
 
     /**

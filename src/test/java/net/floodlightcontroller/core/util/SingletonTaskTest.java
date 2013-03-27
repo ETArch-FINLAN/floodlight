@@ -33,9 +33,7 @@ public class SingletonTaskTest extends FloodlightTestCase {
     public long time = 0;
     
     @Before
-    public void setUp() throws Exception {
-        super.setUp();
-        
+    public void setup() {
         ran = 0;
         finished = 0;
         time = 0;
@@ -147,6 +145,7 @@ public class SingletonTaskTest extends FloodlightTestCase {
                 try {
                     Thread.sleep(50);
                 } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
                 synchronized (tc) {
@@ -158,7 +157,7 @@ public class SingletonTaskTest extends FloodlightTestCase {
         
         long start = System.nanoTime();
         st1.reschedule(5, TimeUnit.MILLISECONDS);
-        Thread.sleep(20);
+        Thread.sleep(10);
         assertEquals("Check that task started", 1, ran);
         assertEquals("Check that task not finished", 0, finished);
         st1.reschedule(75, TimeUnit.MILLISECONDS);
@@ -175,9 +174,9 @@ public class SingletonTaskTest extends FloodlightTestCase {
         assertEquals("Check that task finished exactly twice", 2, finished);
         
         assertTrue("Check that time passed appropriately: " + (time - start),
-                (time - start) >= TimeUnit.NANOSECONDS.convert(130, TimeUnit.MILLISECONDS));
+                (time - start) >= TimeUnit.NANOSECONDS.convert(135, TimeUnit.MILLISECONDS));
         assertTrue("Check that time passed appropriately: " + (time - start),
-                (time - start) <= TimeUnit.NANOSECONDS.convert(160, TimeUnit.MILLISECONDS));
+                (time - start) <= TimeUnit.NANOSECONDS.convert(145, TimeUnit.MILLISECONDS));
         
         ses.shutdown();
         ses.awaitTermination(5, TimeUnit.SECONDS);
@@ -210,7 +209,7 @@ public class SingletonTaskTest extends FloodlightTestCase {
 
         long start = System.nanoTime();
         st1.reschedule(5, TimeUnit.MILLISECONDS);
-        Thread.sleep(20);
+        Thread.sleep(10);
         assertEquals("Check that task started", 1, ran);
         assertEquals("Check that task not finished", 0, finished);
         st1.reschedule(25, TimeUnit.MILLISECONDS);
@@ -227,9 +226,9 @@ public class SingletonTaskTest extends FloodlightTestCase {
         assertEquals("Check that task finished exactly twice", 2, finished);
         
         assertTrue("Check that time passed appropriately: " + (time - start),
-                (time - start) >= TimeUnit.NANOSECONDS.convert(100, TimeUnit.MILLISECONDS));
+                (time - start) >= TimeUnit.NANOSECONDS.convert(105, TimeUnit.MILLISECONDS));
         assertTrue("Check that time passed appropriately: " + (time - start),
-                (time - start) <= TimeUnit.NANOSECONDS.convert(125, TimeUnit.MILLISECONDS));
+                (time - start) <= TimeUnit.NANOSECONDS.convert(115, TimeUnit.MILLISECONDS));
         
         ses.shutdown();
         ses.awaitTermination(5, TimeUnit.SECONDS);
@@ -263,7 +262,7 @@ public class SingletonTaskTest extends FloodlightTestCase {
         
         long start = System.nanoTime();
         st1.reschedule(0, null);
-        Thread.sleep(20);
+        Thread.sleep(10);
         assertEquals("Check that task started", 1, ran);
         assertEquals("Check that task not finished", 0, finished);
         st1.reschedule(0, null);
@@ -280,9 +279,9 @@ public class SingletonTaskTest extends FloodlightTestCase {
         assertEquals("Check that task finished exactly twice", 2, finished);
         
         assertTrue("Check that time passed appropriately: " + (time - start),
-                (time - start) >= TimeUnit.NANOSECONDS.convert(90, TimeUnit.MILLISECONDS));
+                (time - start) >= TimeUnit.NANOSECONDS.convert(100, TimeUnit.MILLISECONDS));
         assertTrue("Check that time passed appropriately: " + (time - start),
-                (time - start) <= TimeUnit.NANOSECONDS.convert(130, TimeUnit.MILLISECONDS));
+                (time - start) <= TimeUnit.NANOSECONDS.convert(110, TimeUnit.MILLISECONDS));
         
         ses.shutdown();
         ses.awaitTermination(5, TimeUnit.SECONDS);

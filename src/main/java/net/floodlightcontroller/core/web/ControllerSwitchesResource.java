@@ -17,16 +17,14 @@
 
 package net.floodlightcontroller.core.web;
 
-import java.util.Collections;
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import net.floodlightcontroller.core.IFloodlightProviderService;
+import net.floodlightcontroller.core.IFloodlightProvider;
 import net.floodlightcontroller.core.IOFSwitch;
-import net.floodlightcontroller.util.FilterIterator;
 
-import org.openflow.util.HexString;
-import org.restlet.data.Form;
-import org.restlet.data.Status;
 import org.restlet.resource.Get;
 import org.restlet.resource.ServerResource;
 
@@ -35,47 +33,18 @@ import org.restlet.resource.ServerResource;
  * @author readams
  */
 public class ControllerSwitchesResource extends ServerResource {
-    public static final String DPID_ERROR = 
-            "Invalid Switch DPID: must be a 64-bit quantity, expressed in " + 
-            "hex as AA:BB:CC:DD:EE:FF:00:11";
-    
     @Get("json")
-    public Iterator<IOFSwitch> retrieve() {
-        IFloodlightProviderService floodlightProvider = 
-                (IFloodlightProviderService)getContext().getAttributes().
-                    get(IFloodlightProviderService.class.getCanonicalName());
+    public List<Map<String, String>> retrieve() {
+        List<Map<String, String>> switchIds = new ArrayList<Map<String, String>>();        
 
-        Long switchDPID = null;
-        
-        Form form = getQuery();
-        String dpid = form.getFirstValue("dpid", true);
-        if (dpid != null) {
-            try {
-                switchDPID = HexString.toLong(dpid);
-            } catch (Exception e) {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, DPID_ERROR);
-                return null;
-            }
+        IFloodlightProvider floodlightProvider = (IFloodlightProvider)getApplication();
+        Map<Long, IOFSwitch> switches = floodlightProvider.getSwitches();
+
+        for (IOFSwitch s: switches.values()) {
+            Map<String, String> m = new HashMap<String, String>();
+            m.put("dpid", s.getStringId());
+            switchIds.add(m);
         }
-        if (switchDPID != null) {
-            IOFSwitch sw = 
-                    floodlightProvider.getSwitches().get(switchDPID);
-            if (sw != null)
-                return Collections.singleton(sw).iterator();
-            return Collections.<IOFSwitch>emptySet().iterator();
-        }
-        final String dpidStartsWith = 
-                form.getFirstValue("dpid__startswith", true);
-        Iterator<IOFSwitch> switer = 
-                floodlightProvider.getSwitches().values().iterator();
-        if (dpidStartsWith != null) {
-            return new FilterIterator<IOFSwitch>(switer) {
-                @Override
-                protected boolean matches(IOFSwitch value) {
-                    return value.getStringId().startsWith(dpidStartsWith);
-                }
-            };
-        } 
-        return switer;
+        return switchIds;
     }
 }

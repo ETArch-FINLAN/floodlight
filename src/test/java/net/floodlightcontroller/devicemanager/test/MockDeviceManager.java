@@ -1,129 +1,95 @@
 /**
- *    Copyright 2013, Big Switch Networks, Inc.
- *
- *    Licensed under the Apache License, Version 2.0 (the "License"); you may
- *    not use this file except in compliance with the License. You may obtain
- *    a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- *    License for the specific language governing permissions and limitations
- *    under the License.
- **/
+*    Copyright 2011, Big Switch Networks, Inc. 
+*    Originally created by David Erickson, Stanford University
+* 
+*    Licensed under the Apache License, Version 2.0 (the "License"); you may
+*    not use this file except in compliance with the License. You may obtain
+*    a copy of the License at
+*
+*         http://www.apache.org/licenses/LICENSE-2.0
+*
+*    Unless required by applicable law or agreed to in writing, software
+*    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+*    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+*    License for the specific language governing permissions and limitations
+*    under the License.
+**/
 
 package net.floodlightcontroller.devicemanager.test;
 
-import java.util.Collection;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Map.Entry;
 
-import net.floodlightcontroller.devicemanager.IDevice;
-import net.floodlightcontroller.devicemanager.IDeviceListener;
-import net.floodlightcontroller.devicemanager.IEntityClass;
-import net.floodlightcontroller.devicemanager.IEntityClassifierService;
-import net.floodlightcontroller.devicemanager.internal.AttachmentPoint;
-import net.floodlightcontroller.devicemanager.internal.Device;
-import net.floodlightcontroller.devicemanager.internal.DeviceManagerImpl;
-import net.floodlightcontroller.devicemanager.internal.Entity;
+import net.floodlightcontroller.devicemanager.Device;
+import net.floodlightcontroller.devicemanager.IDeviceManager;
+import net.floodlightcontroller.packet.Ethernet;
 
-/**
- * Mock device manager useful for unit tests
- * @author readams
- */
-public class MockDeviceManager extends DeviceManagerImpl {
-    /**
-     * Set a new IEntityClassifier
-     * Use this as a quick way to use a particular entity classifier in a 
-     * single test without having to setup the full FloodlightModuleContext
-     * again.
-     * @param ecs 
-     */
-    public void setEntityClassifier(IEntityClassifierService ecs) {
-        this.entityClassifier = ecs;
-        this.startUp(null);
+public class MockDeviceManager implements IDeviceManager {
+    protected Map<Long, Device> devices;
+
+    public MockDeviceManager() {
+        devices = new HashMap<Long, Device>();
     }
     
-    /**
-     * Learn a device using the given characteristics. 
-     * @param macAddress the MAC
-     * @param vlan the VLAN (can be null)
-     * @param ipv4Address the IP (can be null)
-     * @param switchDPID the attachment point switch DPID (can be null)
-     * @param switchPort the attachment point switch port (can be null)
-     * @param processUpdates if false, will not send updates.  Note that this 
-     * method is not thread safe if this is false
-     * @return the device, either new or not
-     */
-    public IDevice learnEntity(long macAddress, Short vlan, 
-                               Integer ipv4Address, Long switchDPID, 
-                               Integer switchPort,
-                               boolean processUpdates) {
-        List<IDeviceListener> listeners = deviceListeners.getOrderedListeners();
-        if (!processUpdates) {
-            deviceListeners.clearListeners();
+    @Override
+    public Device getDeviceByDataLayerAddress(byte[] address) {
+        return devices.get(Ethernet.toLong(address));
+    }
+    
+    @Override
+    public Device getDeviceByDataLayerAddress(long address) {       
+        return devices.get(new Long(address));
+    }
+
+    @Override
+    public Device getDeviceByIPv4Address(Integer address) {
+        Iterator<Entry<Long, Device>> it = devices.entrySet().iterator();
+        while (it.hasNext()) {
+            Device d = it.next().getValue();
+            if (null != d && null != d.getNetworkAddress(address))
+                return d;
         }
-        
-        if (vlan != null && vlan.shortValue() <= 0)
-            vlan = null;
-        if (ipv4Address != null && ipv4Address == 0)
-            ipv4Address = null;
-        IDevice res =  learnDeviceByEntity(new Entity(macAddress, vlan, 
-                                                      ipv4Address, switchDPID, 
-                                                      switchPort, new Date()));
-        // Restore listeners
-        if (listeners != null) {
-            for (IDeviceListener listener : listeners) {
-                deviceListeners.addListener("device", listener);
-            }
-        }
-        return res;
-    }
-    
-    @Override
-    public void deleteDevice(Device device) {
-        super.deleteDevice(device);
-    }
-    
-    /**
-     * Learn a device using the given characteristics. 
-     * @param macAddress the MAC
-     * @param vlan the VLAN (can be null)
-     * @param ipv4Address the IP (can be null)
-     * @param switchDPID the attachment point switch DPID (can be null)
-     * @param switchPort the attachment point switch port (can be null)
-     * @return the device, either new or not
-     */
-    public IDevice learnEntity(long macAddress, Short vlan, 
-                               Integer ipv4Address, Long switchDPID, 
-                               Integer switchPort) {
-        return learnEntity(macAddress, vlan, ipv4Address, 
-                           switchDPID, switchPort, true);
+        return null;
     }
 
     @Override
-    protected Device allocateDevice(Long deviceKey,
-                                    Entity entity, 
-                                    IEntityClass entityClass) {
-        return new MockDevice(this, deviceKey, entity, entityClass);
+    public void invalidateDeviceAPsByIPv4Address(Integer address) {
+        Iterator<Entry<Long, Device>> it = devices.entrySet().iterator();
+        while (it.hasNext()) {
+            Device d = it.next().getValue();
+            if (null != d && null != d.getNetworkAddress(address))
+                d.getAttachmentPoints().clear();
+        }
+    }
+    
+    public void addDevices(List<Device> devices) {
+        ListIterator<Device> lit = devices.listIterator();
+        while (lit.hasNext()) {
+            Device d = lit.next();
+            this.devices.put(d.getDataLayerAddressAsLong(), d);
+        }
+    }
+
+    public void addDevice(Device device) {
+        this.devices.put(device.getDataLayerAddressAsLong(), device);
+    }
+
+    public void clearDevices() {
+        this.devices.clear();
     }
     
     @Override
-    protected Device allocateDevice(Long deviceKey,
-                                    String dhcpClientName,
-                                    List<AttachmentPoint> aps,
-                                    List<AttachmentPoint> trueAPs,
-                                    Collection<Entity> entities,
-                                    IEntityClass entityClass) {
-        return new MockDevice(this, deviceKey, aps, trueAPs, entities, entityClass);
-    }
-    
-    @Override
-    protected Device allocateDevice(Device device,
-                                    Entity entity,
-                                    int insertionpoint) {
-        return new MockDevice(device, entity, insertionpoint);
+    public List<Device> getDevices() {
+        List<Device> devices = new ArrayList<Device>();
+        Iterator<Entry<Long, Device>> it = this.devices.entrySet().iterator();
+        while (it.hasNext()) {
+            devices.add(it.next().getValue());
+        }
+        return devices;
     }
 }

@@ -25,9 +25,9 @@ import java.util.Map;
 import org.openflow.util.HexString;
 import org.restlet.resource.Get;
 
-import net.floodlightcontroller.core.IFloodlightProviderService;
+import net.floodlightcontroller.core.IFloodlightProvider;
+import net.floodlightcontroller.counter.CounterStore;
 import net.floodlightcontroller.counter.ICounter;
-import net.floodlightcontroller.counter.ICounterStoreService;
 
 /**
  * Get counters for a particular switch 
@@ -36,9 +36,7 @@ import net.floodlightcontroller.counter.ICounterStoreService;
 public class SwitchCounterResource extends CounterResourceBase {
     @Get("json")
     public Map<String, Object> retrieve() {
-        IFloodlightProviderService floodlightProvider = 
-                (IFloodlightProviderService)getContext().getAttributes().
-                    get(IFloodlightProviderService.class.getCanonicalName());
+        IFloodlightProvider floodlightProvider = (IFloodlightProvider)getApplication();
         HashMap<String,Object> model = new HashMap<String,Object>();
         
         String switchID = (String) getRequestAttributes().get("switchId");
@@ -47,7 +45,6 @@ public class SwitchCounterResource extends CounterResourceBase {
         Long[] switchDpids;
         if (switchID.equalsIgnoreCase("all")) {
             switchDpids = floodlightProvider.getSwitches().keySet().toArray(new Long[0]);
-            getOneSwitchCounterJson(model, ICounterStoreService.CONTROLLER_NAME, counterName);
             for (Long dpid : switchDpids) {
                 switchID = HexString.toHexString(dpid);
 
@@ -66,7 +63,7 @@ public class SwitchCounterResource extends CounterResourceBase {
         try {
             counterName = URLDecoder.decode(counterName, "UTF-8");
             fullCounterName = 
-                switchID + ICounterStoreService.TitleDelimitor + counterName;
+                switchID + CounterStore.TitleDelimitor + counterName;
         } catch (UnsupportedEncodingException e) {
             //Just leave counterTitle undecoded if there is an issue - fail silently
         }

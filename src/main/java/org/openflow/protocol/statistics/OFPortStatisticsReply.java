@@ -1,7 +1,7 @@
 /**
 *    Copyright (c) 2008 The Board of Trustees of The Leland Stanford Junior
 *    University
-*
+* 
 *    Licensed under the Apache License, Version 2.0 (the "License"); you may
 *    not use this file except in compliance with the License. You may obtain
 *    a copy of the License at
@@ -18,10 +18,6 @@
 package org.openflow.protocol.statistics;
 
 
-import net.floodlightcontroller.core.web.serializers.UShortSerializer;
-
-import org.codehaus.jackson.annotate.JsonIgnore;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.jboss.netty.buffer.ChannelBuffer;
 
 /**
@@ -46,7 +42,6 @@ public class OFPortStatisticsReply implements OFStatistics {
     /**
      * @return the portNumber
      */
-    @JsonSerialize(using=UShortSerializer.class)
     public short getPortNumber() {
         return portNumber;
     }
@@ -227,7 +222,6 @@ public class OFPortStatisticsReply implements OFStatistics {
     }
 
     @Override
-    @JsonIgnore
     public int getLength() {
         return 104;
     }

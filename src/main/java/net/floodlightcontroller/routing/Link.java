@@ -17,66 +17,87 @@
 
 package net.floodlightcontroller.routing;
 
-import net.floodlightcontroller.core.web.serializers.DPIDSerializer;
-import net.floodlightcontroller.core.web.serializers.UShortSerializer;
-
-import org.codehaus.jackson.annotate.JsonProperty;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.openflow.util.HexString;
 
-public class Link implements Comparable<Link> {
-    private long src;
-    private short srcPort;
-    private long dst;
-    private short dstPort;
+/**
+ * Represents a link between two datapaths. It is assumed that
+ * Links will generally be held in a list, and that the first datapath's
+ * id will be held in a different structure.
+ *
+ * @author David Erickson (daviderickson@cs.stanford.edu)
+ */
+public class Link {
+    /**
+     * Outgoing port number of the current datapath the link connects to
+     */
+    protected Short outPort;
 
+    /**
+     * Destination datapath id
+     */
+    protected Long dst;
 
-    public Link(long srcId, short srcPort, long dstId, short dstPort) {
-        this.src = srcId;
-        this.srcPort = srcPort;
-        this.dst = dstId;
-        this.dstPort = dstPort;
+    /**
+     * Incoming port number on the dst datapath the link connects to
+     */
+    protected Short inPort;
+
+    public Link(Short outPort, Short inPort, Long dst) {
+        super();
+        this.outPort = outPort;
+        this.inPort = inPort;
+        this.dst = dst;
     }
 
-    // Convenience method
-    public Link(long srcId, int srcPort, long dstId, int dstPort) {
-        this.src = srcId;
-        this.srcPort = (short) srcPort;
-        this.dst = dstId;
-        this.dstPort = (short) dstPort;
+    /**
+     * @return the port number of the switch this link begins on
+     */
+    public Short getOutPort() {
+        return outPort;
     }
 
-    @JsonProperty("src-switch")
-    @JsonSerialize(using=DPIDSerializer.class)
-    public long getSrc() {
-        return src;
+    /**
+     * @param outPort the outPort to set
+     */
+    public void setOutPort(Short outPort) {
+        this.outPort = outPort;
     }
 
-    @JsonProperty("src-port")
-    @JsonSerialize(using=UShortSerializer.class)
-    public short getSrcPort() {
-        return srcPort;
-    }
-
-    @JsonProperty("dst-switch")
-    @JsonSerialize(using=DPIDSerializer.class)
-    public long getDst() {
+    /**
+     * @return the switch id of the destination switch on this link
+     */
+    public Long getDst() {
         return dst;
     }
-    @JsonProperty("dst-port")
-    @JsonSerialize(using=UShortSerializer.class)
-    public short getDstPort() {
-        return dstPort;
+
+    /**
+     * @param dst the dst to set
+     */
+    public void setDst(Long dst) {
+        this.dst = dst;
+    }
+
+    /**
+     * @return the port number of the destination switch on this link
+     */
+    public Short getInPort() {
+        return inPort;
+    }
+
+    /**
+     * @param inPort the inPort to set
+     */
+    public void setInPort(Short inPort) {
+        this.inPort = inPort;
     }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
+        final int prime = 3203;
         int result = 1;
-        result = prime * result + (int) (dst ^ (dst >>> 32));
-        result = prime * result + dstPort;
-        result = prime * result + (int) (src ^ (src >>> 32));
-        result = prime * result + srcPort;
+        result = prime * result + ((dst == null) ? 0 : dst.hashCode());
+        result = prime * result + ((inPort == null) ? 0 : inPort.hashCode());
+        result = prime * result + ((outPort == null) ? 0 : outPort.hashCode());
         return result;
     }
 
@@ -89,49 +110,30 @@ public class Link implements Comparable<Link> {
         if (getClass() != obj.getClass())
             return false;
         Link other = (Link) obj;
-        if (dst != other.dst)
+        if (dst == null) {
+            if (other.dst != null)
+                return false;
+        } else if (!dst.equals(other.dst))
             return false;
-        if (dstPort != other.dstPort)
+        if (inPort == null) {
+            if (other.inPort != null)
+                return false;
+        } else if (!inPort.equals(other.inPort))
             return false;
-        if (src != other.src)
-            return false;
-        if (srcPort != other.srcPort)
+        if (outPort == null) {
+            if (other.outPort != null)
+                return false;
+        } else if (!outPort.equals(other.outPort))
             return false;
         return true;
     }
 
-
     @Override
     public String toString() {
-        return "Link [src=" + HexString.toHexString(this.src) 
-                + " outPort="
-                + (srcPort & 0xffff)
-                + ", dst=" + HexString.toHexString(this.dst)
+        return "Link [outPort="
+                + ((outPort == null) ? "null" : (0xffff & outPort))
                 + ", inPort="
-                + (dstPort & 0xffff)
-                + "]";
-    }
-    
-    public String toKeyString() {
-    	return (HexString.toHexString(this.src) + "|" +
-    			(this.srcPort & 0xffff) + "|" +
-    			HexString.toHexString(this.dst) + "|" +
-    		    (this.dstPort & 0xffff) );
-    }
-
-    @Override
-    public int compareTo(Link a) {
-        // compare link based on natural ordering - src id, src port, dst id, dst port
-        if (this.getSrc() != a.getSrc())
-            return (int) (this.getSrc() - a.getSrc());
-        
-        if (this.getSrcPort() != a.getSrcPort())
-            return (int) (this.getSrc() - a.getSrc());
-        
-        if (this.getDst() != a.getDst())
-            return (int) (this.getDst() - a.getDst());
-        
-        return (int) (this.getDstPort() - a.getDstPort());
+                + ((inPort == null) ? "null" : (0xffff & inPort))
+                + ", dst=" + HexString.toHexString(this.dst) + "]";
     }
 }
-

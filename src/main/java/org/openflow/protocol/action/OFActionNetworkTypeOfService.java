@@ -36,12 +36,6 @@ public class OFActionNetworkTypeOfService extends OFAction {
         super.setType(OFActionType.SET_NW_TOS);
         super.setLength((short) MINIMUM_LENGTH);
     }
-    
-    public OFActionNetworkTypeOfService(byte tos) {
-        this();
-        this.networkTypeOfService = tos;
-    }
-    
 
     /**
      * @return the networkTypeOfService

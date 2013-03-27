@@ -15,10 +15,6 @@ docs:
 doc:
 	ant javadoc
 
-javadoc:
-	ant javadoc
-
-check: tests
 test: tests
 
 tests: all unit-tests

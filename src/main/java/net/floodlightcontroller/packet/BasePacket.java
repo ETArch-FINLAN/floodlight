@@ -17,7 +17,6 @@
 
 package net.floodlightcontroller.packet;
 
-
 /**
 *
 * @author David Erickson (daviderickson@cs.stanford.edu)
@@ -29,7 +28,6 @@ public abstract class BasePacket implements IPacket {
     /**
      * @return the parent
      */
-    @Override
     public IPacket getParent() {
         return parent;
     }
@@ -37,7 +35,6 @@ public abstract class BasePacket implements IPacket {
     /**
      * @param parent the parent to set
      */
-    @Override
     public IPacket setParent(IPacket parent) {
         this.parent = parent;
         return this;
@@ -46,7 +43,6 @@ public abstract class BasePacket implements IPacket {
     /**
      * @return the payload
      */
-    @Override
     public IPacket getPayload() {
         return payload;
     }
@@ -54,16 +50,9 @@ public abstract class BasePacket implements IPacket {
     /**
      * @param payload the payload to set
      */
-    @Override
     public IPacket setPayload(IPacket payload) {
         this.payload = payload;
         return this;
-    }
-    
-    @Override
-    public void resetChecksum() {
-        if (this.parent != null)
-            this.parent.resetChecksum();
     }
 
     /* (non-Javadoc)
@@ -95,22 +84,5 @@ public abstract class BasePacket implements IPacket {
         } else if (!payload.equals(other.payload))
             return false;
         return true;
-    }
-    
-    @Override
-    public Object clone() {
-        IPacket pkt;
-        try {
-            pkt = this.getClass().newInstance();
-        } catch (Exception e) {
-            throw new RuntimeException("Could not clone packet");
-        }
-        // TODO: we are using serialize()/deserialize() to perform the 
-        // cloning. Not the most efficient way but simple. We can revisit
-        // if we hit performance problems.
-        byte[] data = this.serialize();
-        pkt.deserialize(this.serialize(), 0, data.length);
-        pkt.setParent(this.parent);
-        return pkt;
     }
 }

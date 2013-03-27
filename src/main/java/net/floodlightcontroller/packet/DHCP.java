@@ -63,7 +63,6 @@ public class DHCP extends BasePacket {
     
     public enum DHCPOptionCode {
         OptionCode_SubnetMask           ((byte)1),
-        OptionCode_Hostname             ((byte)12),
         OptionCode_RequestedIP          ((byte)50),
         OptionCode_LeaseTime            ((byte)51),
         OptionCode_MessageType          ((byte)53),
@@ -356,16 +355,13 @@ public class DHCP extends BasePacket {
 
     @Override
     public byte[] serialize() {
-        // not guaranteed to retain length/exact format
-        resetChecksum();
-
         // minimum size 240 including magic cookie, options generally padded to 300
         int optionsLength = 0;
         for (DHCPOption option : this.options) {
-            if (option.getCode() == 0 || option.getCode() == ((byte)255)) {
+            if (option.getCode() == 0 || option.getCode() == 255) {
                 optionsLength += 1;
             } else {
-                optionsLength += 2 + (0xff & option.getLength());
+                optionsLength += 2 + (int)(0xff & option.getLength());
             }
         }
         int optionsPadLength = 0;

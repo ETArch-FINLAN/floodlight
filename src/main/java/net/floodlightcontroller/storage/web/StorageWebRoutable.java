@@ -21,7 +21,7 @@ import org.restlet.Context;
 import org.restlet.Restlet;
 import org.restlet.routing.Router;
 
-import net.floodlightcontroller.restserver.RestletRoutable;
+import net.floodlightcontroller.core.web.RestletRoutable;
 
 /**
  * Creates a router to handle the storage web URIs

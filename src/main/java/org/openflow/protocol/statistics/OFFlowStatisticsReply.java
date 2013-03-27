@@ -19,7 +19,6 @@ package org.openflow.protocol.statistics;
 
 import java.util.List;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.action.OFAction;
@@ -196,7 +195,6 @@ public class OFFlowStatisticsReply implements OFStatistics, OFActionFactoryAware
     }
 
     @Override
-    @JsonIgnore
     public int getLength() {
         return U16.f(length);
     }
@@ -270,23 +268,6 @@ public class OFFlowStatisticsReply implements OFStatistics, OFActionFactoryAware
         }
     }
 
-    @Override
-    public String toString() {
-    	String str = "match=" + this.match;
-    	str += " tableId=" + this.tableId;
-    	str += " durationSeconds=" + this.durationSeconds;
-    	str += " durationNanoseconds=" + this.durationNanoseconds;
-    	str += " priority=" + this.priority;
-    	str += " idleTimeout=" + this.idleTimeout;
-    	str += " hardTimeout=" + this.hardTimeout;
-    	str += " cookie=" + this.cookie;
-    	str += " packetCount=" + this.packetCount;
-    	str += " byteCount=" + this.byteCount;
-    	str += " action=" + this.actions;
-    	
-    	return str;
-    }
-    
     @Override
     public int hashCode() {
         final int prime = 419;

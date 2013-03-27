@@ -20,30 +20,55 @@ package net.floodlightcontroller.routing;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.floodlightcontroller.topology.NodePortTuple;
-
 /**
  * Represents a route between two switches
  *
  * @author David Erickson (daviderickson@cs.stanford.edu)
  */
-public class Route implements Comparable<Route> {
+public class Route implements Cloneable, Comparable<Route> {
     protected RouteId id;
-    protected List<NodePortTuple> switchPorts;
-    protected int routeCount;
+    protected List<Link> path;
 
-    public Route(RouteId id, List<NodePortTuple> switchPorts) {
+    public Route(RouteId id, List<Link> path) {
         super();
         this.id = id;
-        this.switchPorts = switchPorts;
-        this.routeCount = 0; // useful if multipath routing available
+        this.path = path;
     }
 
     public Route(Long src, Long dst) {
         super();
         this.id = new RouteId(src, dst);
-        this.switchPorts = new ArrayList<NodePortTuple>();
-        this.routeCount = 0;
+        this.path = new ArrayList<Link>();
+    }
+
+    /**
+     * Concise way to instantiate a route.  The format of objects must be:
+     *  (Short/Integer outPort, Short/Integer inPort, Long dstDpid)*
+     * @param srcDpid
+     * @param objects
+     */
+    public Route(Long srcDpid, Object... routeElements) {
+        super();
+        this.path = new ArrayList<Link>();
+        if (routeElements.length % 3 > 0)
+            throw new RuntimeException("routeElements must be a multiple of 3");
+        Short outPort, inPort;
+
+        for (int i = 0; i < routeElements.length; i += 3) {
+            if (routeElements[i] instanceof Short)
+                outPort = (Short) routeElements[i];
+            else
+                outPort = ((Integer)routeElements[i]).shortValue();
+
+            if (routeElements[i+1] instanceof Short)
+                inPort = (Short) routeElements[i+1];
+            else
+                inPort = ((Integer)routeElements[i+1]).shortValue();
+
+            this.path.add(new Link(outPort, inPort, (Long) routeElements[i + 2]));
+        }
+        this.id = new RouteId(srcDpid, (this.path.size() == 0) ? srcDpid
+                : this.path.get(this.path.size() - 1).dst);
     }
 
     /**
@@ -63,37 +88,23 @@ public class Route implements Comparable<Route> {
     /**
      * @return the path
      */
-    public List<NodePortTuple> getPath() {
-        return switchPorts;
+    public List<Link> getPath() {
+        return path;
     }
 
     /**
      * @param path the path to set
      */
-    public void setPath(List<NodePortTuple> switchPorts) {
-        this.switchPorts = switchPorts;
+    public void setPath(List<Link> path) {
+        this.path = path;
     }
 
-    /**
-     * @param routeCount routeCount set by (ECMP) buildRoute method 
-     */
-    public void setRouteCount(int routeCount) {
-        this.routeCount = routeCount;
-    }
-    
-    /**
-     * @return routeCount return routeCount set by (ECMP) buildRoute method 
-     */
-    public int getRouteCount() {
-        return routeCount;
-    }
-    
     @Override
     public int hashCode() {
         final int prime = 5791;
         int result = 1;
         result = prime * result + ((id == null) ? 0 : id.hashCode());
-        result = prime * result + ((switchPorts == null) ? 0 : switchPorts.hashCode());
+        result = prime * result + ((path == null) ? 0 : path.hashCode());
         return result;
     }
 
@@ -111,17 +122,26 @@ public class Route implements Comparable<Route> {
                 return false;
         } else if (!id.equals(other.id))
             return false;
-        if (switchPorts == null) {
-            if (other.switchPorts != null)
+        if (path == null) {
+            if (other.path != null)
                 return false;
-        } else if (!switchPorts.equals(other.switchPorts))
+        } else if (!path.equals(other.path))
             return false;
         return true;
     }
 
     @Override
     public String toString() {
-        return "Route [id=" + id + ", switchPorts=" + switchPorts + "]";
+        return "Route [id=" + id + ", path=" + path + "]";
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        Route clone = (Route) super.clone();
+        clone.setId((RouteId) this.id.clone());
+        clone.path = (List<Link>) ((ArrayList<Link>)this.path).clone();
+        return clone;
     }
 
     /**
@@ -129,6 +149,6 @@ public class Route implements Comparable<Route> {
      */
     @Override
     public int compareTo(Route o) {
-        return ((Integer)switchPorts.size()).compareTo(o.switchPorts.size());
+        return ((Integer)path.size()).compareTo(o.path.size());
     }
 }

@@ -27,9 +27,4 @@ public class OFActionDataLayerDestination extends OFActionDataLayer {
         super.setType(OFActionType.SET_DL_DST);
         super.setLength((short) OFActionDataLayer.MINIMUM_LENGTH);
     }
-    
-    public OFActionDataLayerDestination(byte[] address) {
-        this();
-        this.dataLayerAddress = address;
-    }
 }

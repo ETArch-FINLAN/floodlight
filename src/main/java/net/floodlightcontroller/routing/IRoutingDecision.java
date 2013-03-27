@@ -21,8 +21,8 @@ import java.util.List;
 
 import net.floodlightcontroller.core.FloodlightContext;
 import net.floodlightcontroller.core.FloodlightContextStore;
-import net.floodlightcontroller.devicemanager.IDevice;
-import net.floodlightcontroller.devicemanager.SwitchPort;
+import net.floodlightcontroller.devicemanager.Device;
+import net.floodlightcontroller.topology.SwitchPortTuple;
 
 public interface IRoutingDecision {
     public enum RoutingAction {
@@ -33,7 +33,7 @@ public interface IRoutingDecision {
          *                          if the destination is not known at this time, initiate a discovery action for it (e.g. ARP)
          * FORWARD_OR_FLOOD:        Forward this packet, and this flow, to the first (and only device) in getDestinationDevices(),
          *                          if the destination is not known at this time, flood this packet on the source switch
-         * MULTICAST:               Multicast this packet to all the interfaces and devices attached
+         * MULTICAST                Multicast this packet to all the interfaces and devices attached
          */
         NONE, DROP, FORWARD, FORWARD_OR_FLOOD, MULTICAST
     }
@@ -46,12 +46,14 @@ public interface IRoutingDecision {
     public void addToContext(FloodlightContext cntx);
     public RoutingAction getRoutingAction();
     public void setRoutingAction(RoutingAction action);
-    public SwitchPort getSourcePort();
-    public IDevice getSourceDevice();
-    public List<IDevice> getDestinationDevices();
-    public void addDestinationDevice(IDevice d);
-    public List<SwitchPort> getMulticastInterfaces();
-    public void setMulticastInterfaces(List<SwitchPort> lspt);
+    public SwitchPortTuple getSourcePort();
+    public Device getSourceDevice();
+    public List<Device> getDestinationDevices();
+    public void addDestinationDevice(Device d);
+    public List<SwitchPortTuple> getMulticastInterfaces();
+    public void setMulticastInterfaces(List<SwitchPortTuple> lspt);
     public Integer getWildcards();
     public void setWildcards(Integer wildcards);
+
+
 }

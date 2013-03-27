@@ -51,7 +51,7 @@ public class ICMP extends BasePacket {
     }
 
     /**
-     * @param icmpCode code to set
+     * @param icmp code to set
      */
     public ICMP setIcmpCode(byte icmpCode) {
         this.icmpCode = icmpCode;

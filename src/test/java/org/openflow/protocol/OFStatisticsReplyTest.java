@@ -17,8 +17,6 @@
 
 package org.openflow.protocol;
 
-import java.util.List;
-
 import junit.framework.TestCase;
 
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -66,11 +64,10 @@ public class OFStatisticsReplyTest extends OFTestCase {
 
         OFMessageFactory factory = new BasicFactory();
         ChannelBuffer packetBuf = ChannelBuffers.wrappedBuffer(packet);
-        List<OFMessage> msg = factory.parseMessage(packetBuf);
+        OFMessage msg = factory.parseMessage(packetBuf);
         TestCase.assertNotNull(msg);
-        TestCase.assertEquals(msg.size(), 1);
-        TestCase.assertTrue(msg.get(0) instanceof OFStatisticsReply);
-        OFStatisticsReply sr = (OFStatisticsReply) msg.get(0);
+        TestCase.assertTrue(msg instanceof OFStatisticsReply);
+        OFStatisticsReply sr = (OFStatisticsReply) msg;
         TestCase.assertEquals(OFStatisticsType.FLOW, sr.getStatisticType());
         TestCase.assertEquals(3, sr.getStatistics().size());
     }

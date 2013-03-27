@@ -100,12 +100,12 @@ public class NoSqlResultSet implements IResultSet {
         endCurrentRowUpdate();
         
         if (rowUpdateList != null) {
-            storageSource.updateRows(tableName, rowUpdateList);
+            storageSource.updateRowsAndNotify(tableName, rowUpdateList);
             rowUpdateList = null;
         }
         
         if (rowDeleteSet != null) {
-            storageSource.deleteRows(tableName, rowDeleteSet);
+            storageSource.deleteRowsAndNotify(tableName, rowDeleteSet);
             rowDeleteSet = null;
         }
     }

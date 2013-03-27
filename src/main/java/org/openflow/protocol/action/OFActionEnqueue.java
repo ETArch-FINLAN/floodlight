@@ -37,12 +37,6 @@ public class OFActionEnqueue extends OFAction {
         super.setType(OFActionType.OPAQUE_ENQUEUE);
         super.setLength((short) MINIMUM_LENGTH);
     }
-    
-    public OFActionEnqueue(short port, int queueId) {
-        this();
-        this.port = port;
-        this.queueId = queueId;
-    }
 
     /**
      * Get the output port
