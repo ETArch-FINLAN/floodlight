@@ -1,0 +1,24 @@
+Manifest-Version: 1.0
+Main-Class: net.floodlightcontroller.core.internal.Controller
+Class-Path: .
+
+Name: org.restlet
+Implementation-Title: org.restlet
+Implementation-Version: 2.1 Release Candidate 1 (build 3)
+Implementation-Vendor: Noelios Technologies
+
+Name: org.restlet.ext.jackson
+Implementation-Title: org.restlet.ext.jackson
+Implementation-Version: 2.1 Release Candidate 1 (build 3)
+Implementation-Vendor: Noelios Technologies
+
+Name: org.restlet.ext.simple
+Implementation-Title: org.restlet.ext.simple
+Implementation-Version: 2.1 Release Candidate 1 (build 3)
+Implementation-Vendor: Noelios Technologies
+
+Name: org.restlet.ext.slf4j
+Implementation-Title: org.restlet.ext.slf4j
+Implementation-Version: 2.1 Release Candidate 1 (build 3)
+Implementation-Vendor: Noelios Technologies
+
